@@ -16,20 +16,22 @@ Dependencies:
 - nvdlib
 """
 
-from scapy.all import sr1, IP, TCP # Import modules from Scapy
-import requests # Import the requests module for HTTP requests
-import argparse # Import argparse for command-line interface handling
+from scapy.all import sr1, IP, TCP  # Import necessary modules from Scapy
+import requests  # Import the requests module for HTTP requests
+import argparse  # Import argparse for command-line interface handling
 import nvdlib  # Import nvdlib for querying the National Vulnerability Database
 import json  # Import json for handling JSON data
+import socket  # Import socket for banner grabbing
+import re  # Import regular expressions for parsing
 
 """
-Scanning a range of IP addresses to identify active hosts.
+Scans a range of IP addresses to identify active hosts.
 
-Args:
+Args:        
 ip_range (list): List of IP addresses to scan.
 
 Returns:
-list: Lists of active IP addresses.
+list: List of active IP addresses.
 """
 def scan_ip(ip_range):
     active_ips = []
@@ -43,7 +45,7 @@ def scan_ip(ip_range):
 
 """
 Scans specific ports on a given IP address to identify open ports.
-    
+
 Args:
 ip (str): The IP address to scan.
 ports (list): List of ports to scan on the target IP.
@@ -68,27 +70,43 @@ ip (str): The IP address of the target.
 port (int): The open port to connect to.
 
 Returns:
-tuple: A tuple containing the service name and version, or None if it can't be determined.
+tuple: A tuple containing the service name and version, or ("Unknown Service", "Unknown Version") if it can't be determined.
 """
 def get_service_banner(ip, port):
     try:
         # Create a socket connection
-        s = socket.socket()
-        s.settimeout(2)
-        s.connect((ip, port))
-        
-        # Receive the banner
-        banner = s.recv(1024).decode().strip()
-        s.close()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(2)
+            s.connect((ip, port))
+            
+            # Send a dummy request to prompt a response (optional for some services)
+            s.sendall(b'HEAD / HTTP/1.0\r\n\r\n')
+            
+            # Receive the banner
+            banner = s.recv(1024).decode('utf-8', errors='ignore').strip()
+            
+            # Debug: Print the received banner for inspection
+            print(f"[DEBUG] Banner Received from {ip}:{port} -> {banner}")
 
-        # Basic parsing (this can be enhanced)
-        if "Apache" in banner:
-            return ("Apache", banner.split("/")[1].split(" ")[0])
-        elif "OpenSSH" in banner:
-            return ("OpenSSH", banner.split("_")[1])
-        else:
+            # Use regular expressions to extract service name and version
+            patterns = [
+                (r"Apache/?([^\s]*)", "Apache"),
+                (r"nginx/?([^\s]*)", "Nginx"),
+                (r"Microsoft-IIS/?([^\s]*)", "Microsoft-IIS"),
+                (r"OpenSSH_([^\s]*)", "OpenSSH"),
+                (r"FTP server \(.*\) version ([^\s]*)", "FTP Server"),
+                # Add more patterns as needed
+            ]
+            
+            for pattern, service_name in patterns:
+                match = re.search(pattern, banner, re.IGNORECASE)
+                if match:
+                    service_version = match.group(1) if match.group(1) else "Unknown Version"
+                    return (service_name, service_version)
+            
             return ("Unknown Service", "Unknown Version")
     except Exception as e:
+        print(f"[ERROR] Failed to retrieve banner from {ip}:{port} -> {e}")
         return ("Unknown Service", "Unknown Version")
 
 """

@@ -38,19 +38,32 @@ class TestVulScanner(unittest.TestCase):
 
     # Mocks the socket connection and banner reception to test if the service name and version are correctly parsed.
     @patch('socket.socket')
-    def test_get_service_banner(self, mock_socket):
-        # Mock the socket instance
-        mock_socket_instance = mock_socket.return_value
+    def test_get_service_banner(self, mock_socket_class):
+        # Create a mock socket instance
+        mock_socket_instance = MagicMock()
+        mock_socket_class.return_value = mock_socket_instance
+
+        # Set up the __enter__ method to return the mock socket instance
+        mock_socket_instance.__enter__.return_value = mock_socket_instance
+
+        # Mock the connect and sendall methods (do nothing)
+        mock_socket_instance.connect.return_value = None
+        mock_socket_instance.sendall.return_value = None
     
-        # Mock the connection and the banner returned by the service
-        mock_socket_instance.recv.return_value = b"Apache/2.4.41 (Ubuntu)"
-    
+        # Mock the recv method to return a sample Apache banner
+        mock_socket_instance.recv.return_value = b"Apache/2.4.41 (Ubuntu)\r\n"
+
         # Test the banner grabbing
         service_name, service_version = get_service_banner("192.168.1.1", 80)
-    
+
         # Check if the service and version were correctly identified
         self.assertEqual(service_name, "Apache")
         self.assertEqual(service_version, "2.4.41")
+
+        # Ensure that socket methods were called as expected
+        mock_socket_instance.connect.assert_called_with(("192.168.1.1", 80))
+        mock_socket_instance.sendall.assert_called_with(b'HEAD / HTTP/1.0\r\n\r\n')
+        mock_socket_instance.recv.assert_called_with(1024)
 
     # Mocks the nvdlib.searchCVE function to simulate CVE search results 
     # and ensure that the vulnerability lookup function works as expected.
