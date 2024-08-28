@@ -1,4 +1,4 @@
-# VulScanner
+# Vulnerability Scanner
 
 ## Objective
 
