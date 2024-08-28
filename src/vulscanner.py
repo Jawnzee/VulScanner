@@ -56,6 +56,7 @@ list: List of open ports on the target IP.
 def scan_ports(ip, ports):
     open_ports = []
     for port in ports:  # Loop through each port in the provided list
+        port = int(port)
         response = sr1(IP(dst=ip)/TCP(dport=port, flags="S"), timeout=1, verbose=0)
         if response:  # If a response is received, the port is open
             print(f"Port {port} on {ip} is open")
@@ -70,7 +71,8 @@ ip (str): The IP address of the target.
 port (int): The open port to connect to.
 
 Returns:
-tuple: A tuple containing the service name and version, or ("Unknown Service", "Unknown Version") if it can't be determined.
+tuple: A tuple containing the service name and version, 
+or ("Unknown Service", "Unknown Version") if it can't be determined.
 """
 def get_service_banner(ip, port):
     try:
@@ -94,6 +96,7 @@ def get_service_banner(ip, port):
                 (r"nginx/?([^\s]*)", "Nginx"),
                 (r"Microsoft-IIS/?([^\s]*)", "Microsoft-IIS"),
                 (r"OpenSSH_([^\s]*)", "OpenSSH"),
+                (r"lighttpd/?([^\s]*)", "lighttpd"),  # Added lighttpd detection
                 (r"FTP server \(.*\) version ([^\s]*)", "FTP Server"),
                 # Add more patterns as needed
             ]
@@ -121,15 +124,20 @@ list: A list of CVEs related to the service and version.
 """
 def lookup_vulnerabilities(service_name, service_version):
     try:
-        # Search CVEs using the service name and version
-        cve_results = nvdlib.searchCVE(keyword=service_name, version=service_version)
+        # Modify the query to match the correct parameters for nvdlib.searchCVE
+        cpe_name = f"cpe:2.3:a:{service_name}:{service_name}:{service_version}"
+        cve_results = nvdlib.searchCVE(cpeName=cpe_name)
         cve_list = []
 
         for cve in cve_results:
+            # Safely access the description and other attributes
+            description = getattr(cve, 'description', 'No description available')
+            severity = getattr(cve, 'v3severity', 'N/A')
+
             cve_list.append({
                 'id': cve.id,
-                'description': cve.description,
-                'severity': cve.v3severity if cve.v3severity else "N/A"
+                'description': description,
+                'severity': severity
             })
 
         return cve_list
