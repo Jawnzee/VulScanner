@@ -39,12 +39,16 @@ class TestVulScanner(unittest.TestCase):
     # Mocks the socket connection and banner reception to test if the service name and version are correctly parsed.
     @patch('socket.socket')
     def test_get_service_banner(self, mock_socket):
-        # Mock the banner returned by a service
-        mock_socket_instance = MagicMock()
+        # Mock the socket instance
+        mock_socket_instance = mock_socket.return_value
+    
+        # Mock the connection and the banner returned by the service
         mock_socket_instance.recv.return_value = b"Apache/2.4.41 (Ubuntu)"
-        mock_socket.return_value = mock_socket_instance
-        
+    
+        # Test the banner grabbing
         service_name, service_version = get_service_banner("192.168.1.1", 80)
+    
+        # Check if the service and version were correctly identified
         self.assertEqual(service_name, "Apache")
         self.assertEqual(service_version, "2.4.41")
 
