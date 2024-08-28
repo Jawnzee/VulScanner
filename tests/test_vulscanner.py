@@ -1,11 +1,17 @@
+import sys
+import os
 import unittest
 from unittest.mock import patch, MagicMock
-from src.vulscanner import scan_ip, scan_ports, get_service_banner, lookup_vulnerabilities
+
+# Add the src directory to the Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+from vulscanner import scan_ip, scan_ports, get_service_banner, lookup_vulnerabilities
 
 class TestVulScanner(unittest.TestCase):
 
     # Tests the scan_ip function by mocking the response from sr1 to simulate active IPs.
-    @patch('src.vulscanner.sr1')
+    @patch('vulscanner.sr1')
     def test_scan_ip(self, mock_sr1):
         # Mock the response for an active IP
         mock_sr1.return_value = MagicMock()
@@ -17,7 +23,7 @@ class TestVulScanner(unittest.TestCase):
         self.assertIn("192.168.1.2", active_ips)
 
     # Tests the scan_ports function by mocking the sr1 response to simulate open ports.
-    @patch('src.vulscanner.sr1')
+    @patch('vulscanner.sr1')
     def test_scan_ports(self, mock_sr1):
         # Mock the response for an open port
         mock_sr1.return_value = MagicMock()
@@ -30,8 +36,9 @@ class TestVulScanner(unittest.TestCase):
         self.assertIn(80, open_ports)
         self.assertIn(443, open_ports)
 
-    # Mocks the socket connection and banner reception to test if the service name and version are correctly parsed.
-    @patch('src.vulscanner.socket.socket')
+    # Mocks the socket connection and banner reception to 
+    # test if the service name and version are correctly parsed.
+    @patch('vulscanner.socket.socket')
     def test_get_service_banner(self, mock_socket):
         # Mock the banner returned by a service
         mock_socket_instance = MagicMock()
@@ -44,7 +51,7 @@ class TestVulScanner(unittest.TestCase):
 
     # Mocks the nvdlib.searchCVE function to simulate CVE search results 
     # and ensure that the vulnerability lookup function works as expected.
-    @patch('src.vulscanner.nvdlib.searchCVE')
+    @patch('vulscanner.nvdlib.searchCVE')
     def test_lookup_vulnerabilities(self, mock_searchCVE):
         # Mock the CVE search result
         mock_cve = MagicMock()
