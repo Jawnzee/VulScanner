@@ -2,7 +2,7 @@
 
 ## Objective
 
-The primary objective of VulScanner is to provide cybersecurity professionals and network administrators with a tool to identify active hosts, open ports, and associated vulnerabilities within a specified IP range. This tool integrates with the National Vulnerability Database (NVD) to provide detailed vulnerability information based on the detected services running on open ports.
+The primary objective of VulScanner is to provide cybersecurity professionals and network administrators with a tool to identify active hosts, open ports, and associated vulnerabilities within a specified IP range. This tool integrates with the National Vulnerability Database (NVD) to provide detailed vulnerability information, including CVE details, based on the detected services running on open ports.
 
 ### Skills Learned
 
@@ -33,16 +33,45 @@ The primary objective of VulScanner is to provide cybersecurity professionals an
      python3 -m venv venv
      source venv/bin/activate
      ```
+     
    - Install required dependencies:
      ```bash
      pip install -r requirements.txt
      ```
 
 3. **Run the Script:**
-   - Execute the main script to start scanning:
+   - Execute the main script to start scanning. The script can be run with the following arguments:
      ```bash
-     python vulscanner.py
+     python vulscanner.py [arguments]
      ```
+
+   - Required Arguments:
+      - -t, --target: (Required) Specify the target IP address or domain to scan.
+        ```bash
+        python vulscanner.py -t 192.168.1.1
+        ```
+
+   - Optional Arguments:
+      - -p, --ports: (Optional) Specify the ports to scan (e.g., 80,443). If not provided, the script will scan common ports.
+        ```bash
+        python vulscanner.py -t 192.168.1.1 -p 80,443
+        ```
+
+      - -o, --output: (Optional) Specify the output file to save the scan results. If not provided, results will be displayed in the terminal.
+        ```bash
+        python vulscanner.py -t 192.168.1.1 -o results.txt
+        ```
+
+      - -v, --verbose: (Optional) Increase the verbosity of the output for debugging purposes.
+        ```bash
+        python vulscanner.py -t 192.168.1.1 -v
+        ```
+
+   - Example Usage:
+      - To run a scan on the target IP 192.168.1.1 on ports 80 and 443, with results saved to results.txt, you would use:
+        ```bash
+        python vulscanner.py -t 192.168.1.1 -p 80,443 -o results.txt
+        ```
 
 ## Screenshots
 _Include relevant screenshots here to illustrate how the tool works._
