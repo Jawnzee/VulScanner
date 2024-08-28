@@ -88,7 +88,7 @@ def get_service_banner(ip, port):
             return ("OpenSSH", banner.split("_")[1])
         else:
             return ("Unknown Service", "Unknown Version")
-            except Exception as e:
+    except Exception as e:
         return ("Unknown Service", "Unknown Version")
 
 """
