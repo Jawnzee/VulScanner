@@ -96,7 +96,7 @@ def get_service_banner(ip, port):
                 (r"nginx/?([^\s]*)", "Nginx"),
                 (r"Microsoft-IIS/?([^\s]*)", "Microsoft-IIS"),
                 (r"OpenSSH_([^\s]*)", "OpenSSH"),
-                (r"lighttpd/?([^\s]*)", "lighttpd"),  # Added lighttpd detection
+                (r"lighttpd/?([^\s]*)", "lighttpd"),
                 (r"FTP server \(.*\) version ([^\s]*)", "FTP Server"),
                 # Add more patterns as needed
             ]
