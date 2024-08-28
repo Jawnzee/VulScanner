@@ -36,9 +36,8 @@ class TestVulScanner(unittest.TestCase):
         self.assertIn(80, open_ports)
         self.assertIn(443, open_ports)
 
-    # Mocks the socket connection and banner reception to 
-    # test if the service name and version are correctly parsed.
-    @patch('vulscanner.socket.socket')
+    # Mocks the socket connection and banner reception to test if the service name and version are correctly parsed.
+    @patch('socket.socket')
     def test_get_service_banner(self, mock_socket):
         # Mock the banner returned by a service
         mock_socket_instance = MagicMock()
