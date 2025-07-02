@@ -71,7 +71,4 @@ The primary objective of VulScanner is to provide cybersecurity professionals an
       - To run a scan on the target IP 192.168.1.1 on ports 80 and 443, with results saved to results.txt, you would use:
         ```bash
         python vulscanner.py -t 192.168.1.1 -p 80,443 -o results.txt
-        ```
-
-## Screenshots
-_Include relevant screenshots here to illustrate how the tool works._
+        ``
